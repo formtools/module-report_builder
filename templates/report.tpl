@@ -8,7 +8,13 @@
 
     {if !$is_single_form}
       <div class="margin_bottom_large">
-        <div id="rb_expand_contract">{$LANG.report_builder.phrase_expand_all}</div>
+        <div id="rb_expand_contract">
+          {if $expand_by_default == "yes"}
+            {$LANG.report_builder.phrase_contract_all}
+          {else}
+            {$LANG.report_builder.phrase_expand_all}
+          {/if}
+        </div>
         <div id="rb_expand_label" class="hidden">{$LANG.report_builder.phrase_expand_all}</div>
         <div id="rb_contract_label" class="hidden">{$LANG.report_builder.phrase_contract_all}</div>
         {$LANG.report_builder.text_reports_intro}
@@ -35,7 +41,7 @@
           <div class="rb_form_name">{$form_info.form_name}</div>
           <div class="clear"></div>
         </div>
-        <div class="{if $is_single_form}rb_report_section_single_form{else}rb_report_section{/if}">
+        <div class="{if $is_single_form}rb_report_section_single_form{else}rb_report_section{/if}"{if $expand_by_default == "yes"} style="display: block"{/if}>
           {foreach from=$form_views.$key item=view_info}
             <div class="rb_view_row">
               <div class="rb_view_name">{$view_info.view_name}</div>

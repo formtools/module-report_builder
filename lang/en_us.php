@@ -27,6 +27,7 @@ $L["phrase_icon_behaviour"] = "<i>Reports</i> icon should open reports in...";
 
 $L["phrase_expand_all"] = "+ expand";
 $L["phrase_contract_all"] = "- contract";
+$L["phrase_expand_reports_desc"] = "Expand reports on All Reports page by default";
 
 $L["notify_settings_updated"] = "The settings have been updated.";
 $L["notify_no_form_found"] = "Sorry, that form doesn't exist. What probably happened was that the form was deleted, but the menu wasn't updated to remove the old link.";

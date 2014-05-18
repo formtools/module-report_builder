@@ -57,7 +57,7 @@ function rb_include_in_head($location, $params)
   {
     echo <<< END
 <link type="text/css" rel="stylesheet" href="$g_root_url/modules/report_builder/global/css/reports.css">
-<script src="$g_root_url/modules/report_builder/global/scripts/reports.js"></script>
+<script src="$g_root_url/modules/report_builder/global/scripts/reports.js?v=2"></script>
 END;
   }
 
@@ -297,9 +297,13 @@ function rb_get_reports($form_id)
     }
   }
 
+  $module_settings = ft_get_module_settings("", "report_builder");
+  $expand_by_default = isset($module_settings["expand_by_default"]) ? $module_settings["expand_by_default"] : "no";
+
   $smarty->assign("forms", $forms);
   $smarty->assign("form_views", $form_views);
   $smarty->assign("export_options", $export_options);
+  $smarty->assign("expand_by_default", $expand_by_default);
   $return_info["content"] = $smarty->fetch(realpath(dirname(__FILE__) . "/../../templates/report.tpl"));
 
   return $return_info;

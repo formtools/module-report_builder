@@ -8,7 +8,8 @@ if (isset($request["update"]))
 {
   $settings = array(
     "show_reports_icon_on_submission_listing_page" => (isset($request["show_reports_icon_on_submission_listing_page"])) ?  $request["show_reports_icon_on_submission_listing_page"] : "yes",
-    "icon_behaviour" => (isset($request["icon_behaviour"])) ?  $request["icon_behaviour"] : "dialog"
+    "icon_behaviour" => (isset($request["icon_behaviour"])) ?  $request["icon_behaviour"] : "dialog",
+    "expand_by_default" => (isset($request["expand_by_default"])) ?  $request["expand_by_default"] : "no"
   );
   ft_set_module_settings($settings);
   $g_success = true;

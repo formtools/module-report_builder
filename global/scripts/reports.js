@@ -20,6 +20,8 @@ $(function() {
     }
     reports_ns.all_expanded = !reports_ns.all_expanded;
   });
+
+  reports_ns.all_expanded = ($("#rb_expand_contract").html == $("#rb_expand_label").html()) ? false : true;
 });
 
 
