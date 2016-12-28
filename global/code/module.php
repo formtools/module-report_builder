@@ -1,10 +1,47 @@
 <?php
-/**
- * According to the Terms of Service, this file may not be de-obfuscated or edited.
- * http://modules.formtools.org/license_agreement.php
- *
- * @copyright Encore Web Studios 2012
- */
-function report_builder__install($module_id){global $g_table_prefix, $g_root_dir, $g_root_url, $LANG;$success = "";$message = "";$encrypted_key = isset($_POST["\x65\153"]) ? $_POST["\x65\153"] : "";$module_key= isset($_POST["\153"]) ? $_POST["\153"] : "";if (empty($encrypted_key) || empty($module_key) || $encrypted_key != crypt($module_key, "xp")){$success = false;}else{$success = true;ft_register_hook("co\x64\145", "\162\x65\160o\162\x74_\x62\165\x69\154de\162", "s\x74\x61\x72\164", "\146\x74\137co\156\163tr\x75\x63\x74_p\x61\x67\145\137\x75\x72\154", "rb\x5f\143on\x73t\x72u\x63\164_p\141\x67\145\x5f\x75r\154", 50, true);ft_register_hook("co\x64\145", "\162\x65p\157r\x74_\x62\x75\151l\144\x65\x72", "\x6di\144dle", "\x66\164\137\x67\x65t\137\x61\144\x6d\x69\156\137\x6d\145\x6eu_\x70\x61\x67\145s\137\144\x72\x6f\160\144\x6fw\x6e", "\162\142\x5f\x61\x64\x64\x5f\162ep\157r\x74\137\142\165\151l\144e\162\x5f\155e\x6e\165\137i\164\x65\155\x73", 50, true);ft_register_hook("\143ode", "\x72e\x70\x6f\162\x74_\142\165\x69l\x64\145\x72", "m\151d\144le", "ft\137\147et\137cl\151\x65\x6et_\x6denu\137\x70\x61\x67\145s\137d\x72\x6fp\x64\x6fw\156", "rb\x5f\141\x64\144_\x72\x65\160\157\162t\137\x62\x75il\144\x65\x72_\155\145\156\165\x5f\x69\x74\145\155s", 50, true);ft_register_hook("t\145\155plat\x65", "\x72eport\137\x62\x75il\144\145r", "h\x65\x61\x64\x5f\142ot\x74o\x6d", "", "\162\x62\x5f\x69nc\154ud\145\137\151\x6e_head");ft_register_hook("c\x6f\x64\145", "\x72\x65\x70\157r\164\x5f\x62u\x69\154der", "\155\141i\156", "\x66t\137\144\151\163p\x6c\141\x79\x5fs\165\142\155\151s\163\151\157\x6e_\154\151s\x74\x69\156\147_\x71\x75\151c\153\154\151\156k\163", "r\142\x5fa\144\144\x5fq\165\151c\x6b\154\x69n\x6b", 50, true);$settings = array("s\150\157\167\137\x72\145\160o\x72\x74\163_\151c\x6fn\x5f\x6f\x6e\137\x73u\x62\155i\x73sion_\154\151sti\x6e\x67\137\160a\147\145" => "\x79\x65s","ic\157n_\x62\145ha\x76\151\x6f\165\162" => "\144ial\x6f\x67","\145x\x70\x61\x6ed\137\x62y\137\x64\x65\146\x61\x75l\x74" => "yes");ft_set_settings($settings, "\162\x65\x70o\162\x74\x5fb\165i\x6cd\145\x72");}return array($success, $message);}function report_builder__uninstall($module_id){global $g_table_prefix;$table = $g_table_prefix . "menu\137\x69\x74em\x73";mysql_query("\x0d\x0a \040\x20 \x44E\114E\124\105 \106\122\117\x4d\040$table
-\012 \x20\x20\x20\x57\110\x45\122\x45 (pa\147e\x5f\x69\x64\x65\156\164\x69f\x69\145\162 \075 'r\x62_\141ll\137\x72\x65\160o\x72\164\163'\x29\040\117\122
-\012  \040\040   \040\040\x20(p\x61\x67\x65\137\x69d\145\x6e\164i\146\151\145r L\111\113\105\x20'\162b\x5f\146or\x6d\137\045'\x29\015\x0a\040 ");return array(true, "");}function report_builder__update($old_version_info, $new_version_info){global $g_table_prefix;$old_version_date = date("\x59m\144", ft_convert_datetime_to_timestamp($old_version_info["\155o\144\x75le_\x64a\164\x65"]));if ($old_version_date < 20120426){ft_set_settings(array("\145\x78\x70an\144\x5fby\137\x64\145\x66a\x75l\164" => "\x6eo"), "r\x65\160\x6fr\164\x5f\142\x75\x69\154de\162");}return array(true, "");}
+
+
+function report_builder__install($module_id)
+{
+	ft_register_hook("code", "report_builder", "start", "ft_construct_page_url", "rb_construct_page_url", 50, true);
+	ft_register_hook("code", "report_builder", "middle", "ft_get_admin_menu_pages_dropdown", "rb_add_report_builder_menu_items", 50, true);
+	ft_register_hook("code", "report_builder", "middle", "ft_get_client_menu_pages_dropdown", "rb_add_report_builder_menu_items", 50, true);
+	ft_register_hook("template", "report_builder", "head_bottom", "", "rb_include_in_head");
+	ft_register_hook("code", "report_builder", "main", "ft_display_submission_listing_quicklinks", "rb_add_quicklink", 50, true);
+
+	$settings = array(
+		"show_reports_icon_on_submission_listing_page" => "yes",
+		"icon_behaviour" => "dialog",
+		"expand_by_default" => "yes"
+	);
+	ft_set_settings($settings, "report_builder");
+
+	return array(true, "");
+}
+
+
+function report_builder__uninstall($module_id)
+{
+	global $g_table_prefix;
+
+	mysql_query("
+		DELETE FROM {$g_table_prefix}menu_items
+		WHERE (page_identifier = 'rb_all_reports') OR
+			(page_identifier LIKE 'rb_form_%')
+	");
+
+	return array(true, "");
+}
+
+
+function report_builder__update($old_version_info, $new_version_info)
+{
+	$old_version_date = date("Ymd", ft_convert_datetime_to_timestamp($old_version_info["module_date"]));
+
+	if ($old_version_date < 20120426)
+	{
+		ft_set_settings(array("expand_by_default" => "no"), "report_builder");
+	}
+
+	return array(true, "");
+}
