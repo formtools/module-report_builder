@@ -2,7 +2,6 @@
 
 require_once("../../global/library.php");
 ft_init_module_page();
-$request = array_merge($_POST, $_GET);
 
 if (isset($request["update"]))
 {

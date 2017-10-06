@@ -1,39 +1,34 @@
 <?php
 
-require_once("../../global/session_start.php");
-ft_include_module("export_manager");
-ft_check_permission("client");
+require_once("../../global/library.php");
 
-if (isset($_GET["form_id"]))
-{
-  $form_id = $_GET["form_id"];
-  $_SESSION["ft"]["curr_form_id"] = $form_id;
-}
-else
-{
-  $form_id = $_SESSION["ft"]["curr_form_id"];
+use FormTools\Modules;
+use FormTools\Sessions;
+use FormTools\Views;
+
+$module = Modules::initModulePage("client");
+
+if (isset($_GET["form_id"])) {
+    Sessions::set("curr_form_id", $_GET["form_id"]);
+} else {
+    $form_id = Sessions::get("curr_form_id");
 }
 
-if (isset($_GET["view_id"]))
-{
-  $view_id = $_GET["view_id"];
-  $_SESSION["ft"]["form_{$form_id}_view_id"] = $view_id;
-}
-else
-{
-  $view_id = $_SESSION["ft"]["form_{$form_id}_view_id"];
+if (isset($_GET["view_id"])) {
+    Sessions::set("form_{$form_id}_view_id", $_GET["view_id"]);
+} else {
+    $view_id = Sessions::get("form_{$form_id}_view_id");
 }
 
 // sort order
-$view_info = ft_get_view($view_id);
+$view_info = Views::getView($view_id);
 $order = "{$view_info['default_sort_field']}-{$view_info['default_sort_field_order']}";
 
-
-$_SESSION["ft"]["current_search"]["order"] = $order;
-$_SESSION["ft"]["current_search"]["search_fields"] = array(
+Sessions::set("current_search.order", $order);
+Sessions::set("current_search.search_fields", array(
   "search_field"   => "",
   "search_date"    => "",
   "search_keyword" => ""
-);
+));
 
 require_once(realpath(dirname(__FILE__) . "/../export_manager/export.php"));
