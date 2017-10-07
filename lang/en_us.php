@@ -37,4 +37,4 @@ $L["text_reports_intro"] = "Click on a row to view all available reports for tha
 $L["text_module_intro"] = "The Reports Builder module provides an alternative, user friendly way to export and view form submission data. Instead of having to use the Views dropdown on the Submission Listing page to select what you want to see, this module generates a custom page of Views (or <i>Reports</i>) along with direct links to the export types.";
 $L["text_export_manager_not_available"] = "The Export Manager isn't installed or enabled. This module requires the Export Manager in order to display the reports.";
 
-$L["text_help"] = "Please see our <a href=\"http://modules.formtools.org/report_builder/\" target=\"_blank\">online help documentation</a> for more information about this module.";
+$L["text_help"] = "Please see our <a href=\"https://docs.formtools.org/modules/report_builder/\" target=\"_blank\">online help documentation</a> for more information about this module.";

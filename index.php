@@ -1,29 +1,31 @@
 <?php
 
-require_once("../../global/library.php");
-ft_init_module_page();
+require("../../global/library.php");
 
-if (isset($request["update"]))
-{
-  $settings = array(
-    "show_reports_icon_on_submission_listing_page" => (isset($request["show_reports_icon_on_submission_listing_page"])) ?  $request["show_reports_icon_on_submission_listing_page"] : "yes",
-    "icon_behaviour" => (isset($request["icon_behaviour"])) ?  $request["icon_behaviour"] : "dialog",
-    "expand_by_default" => (isset($request["expand_by_default"])) ?  $request["expand_by_default"] : "no"
-  );
-  ft_set_module_settings($settings);
-  $g_success = true;
-  $g_message = $L["notify_settings_updated"];
+use FormTools\Modules;
+
+$module = Modules::initModulePage("admin");
+$L = $module->getLangStrings();
+
+$success = true;
+$message = "";
+if (isset($request["update"])) {
+    $settings = array(
+        "show_reports_icon_on_submission_listing_page" => (isset($request["show_reports_icon_on_submission_listing_page"])) ?  $request["show_reports_icon_on_submission_listing_page"] : "yes",
+        "icon_behaviour" => (isset($request["icon_behaviour"])) ?  $request["icon_behaviour"] : "dialog",
+        "expand_by_default" => (isset($request["expand_by_default"])) ?  $request["expand_by_default"] : "no"
+    );
+    Modules::setModuleSettings($settings);
+    $message = $L["notify_settings_updated"];
 }
 
-$module_settings = ft_get_module_settings();
+$module_settings = Modules::getModuleSettings();
 
-$page_vars = array();
-$page_vars["module_settings"] = $module_settings;
-$page_vars["export_groups"] = array();
-if (ft_check_module_available("export_manager") && ft_check_module_enabled("export_manager"))
-{
-  $page_vars["export_manager_available"] = true;
-  ft_include_module("export_manager");
-}
+$page_vars = array(
+    "g_success" => $success,
+    "g_message" => $message,
+    "module_settings" => $module_settings,
+    "export_manager_available" => Modules::checkModuleUsable("export_manager")
+);
 
-ft_display_module_page("templates/index.tpl", $page_vars);
+$module->displayPage("templates/index.tpl", $page_vars);

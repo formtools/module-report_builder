@@ -16,7 +16,7 @@
   {if !$export_manager_available}
     <div class="error margin_bottom_large">
       <div style="padding: 6px">
-        {$LANG.report_builder.text_export_manager_not_available}
+        {$L.text_export_manager_not_available}
       </div>
     </div>
   {/if}
