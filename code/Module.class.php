@@ -5,8 +5,11 @@ namespace FormTools\modules\ReportBuilder;
 
 use FormTools\Core;
 use FormTools\Hooks;
+use FormTools\Menus;
 use FormTools\Module as FormToolsModule;
+use FormTools\Modules;
 use FormTools\Settings;
+use FormTools\Sessions;
 
 
 class Module extends FormToolsModule
@@ -17,12 +20,8 @@ class Module extends FormToolsModule
     protected $authorEmail = "ben.keen@gmail.com";
     protected $authorLink = "http://formtools.org";
     protected $version = "2.0.0";
-    protected $date = "2017-10-06";
+    protected $date = "2017-10-07";
     protected $originLanguage = "en_us";
-    protected $jsFiles = array(
-//        "{FTROOT}/global/codemirror/js/codemirror.js",
-//        "{MODULEROOT}/scripts/pages.js"
-    );
 
     protected $nav = array(
         "module_name" => array("index.php", false),
@@ -31,11 +30,11 @@ class Module extends FormToolsModule
 
     public function install($module_id)
     {
-        Hooks::registerHook("code", "report_builder", "start", "ft_construct_page_url", "constructPageUrl", 50, true);
-        Hooks::registerHook("code", "report_builder", "middle", "ft_get_admin_menu_pages_dropdown", "addReportBuilderMenuItems", 50, true);
-        Hooks::registerHook("code", "report_builder", "middle", "ft_get_client_menu_pages_dropdown", "addReportBuilderMenuItems", 50, true);
+        Hooks::registerHook("code", "report_builder", "start", "FormTools\\Pages::constructPageUrl", "constructPageUrl", 50, true);
+        Hooks::registerHook("code", "report_builder", "middle", "FormTools\\Menus::getAdminMenuPagesDropdown", "addReportBuilderMenuItems", 50, true);
+        Hooks::registerHook("code", "report_builder", "middle", "FormTools\\Menus::getClientMenuPagesDropdown", "addReportBuilderMenuItems", 50, true);
         Hooks::registerHook("template", "report_builder", "head_bottom", "", "includeInHead");
-        Hooks::registerHook("code", "report_builder", "main", "ft_display_submission_listing_quicklinks", "addQuicklink", 50, true);
+        Hooks::registerHook("code", "report_builder", "main", "FormTools\\Submissions::displaySubmissionListingQuicklinks", "addQuicklink", 50, true);
 
         $settings = array(
             "show_reports_icon_on_submission_listing_page" => "yes",
@@ -58,6 +57,9 @@ class Module extends FormToolsModule
                   (page_identifier LIKE 'rb_form_%')
         ");
         $db->execute();
+
+        // ensure the menu is re-cached
+        Menus::cacheAccountMenu(Core::$user->getAccountId());
 
         return array(true, "");
     }
@@ -87,27 +89,29 @@ class Module extends FormToolsModule
      * @param string $location
      * @param array $params
      */
-    function rb_include_in_head($location, $params)
+    public static function includeInHead($location, $params)
     {
-        global $g_root_url, $LANG;
+        $LANG = Core::$L;
+        $root_url = Core::getRootUrl();
 
         if ($params["page"] == "report_builder_reports_page") {
             echo <<< END
-    <link type="text/css" rel="stylesheet" href="$g_root_url/modules/report_builder/global/css/reports.css">
-    <script src="$g_root_url/modules/report_builder/global/scripts/reports.js?v=2"></script>
+    <link type="text/css" rel="stylesheet" href="$root_url/modules/report_builder/css/reports.css">
+    <script src="$root_url/modules/report_builder/scripts/reports.js"></script>
 END;
         }
 
         if ($params["page"] == "admin_forms" || $params["page"] == "client_forms") {
-            $L = ft_get_module_lang_file_contents("report_builder");
+            $module = Modules::getModuleInstance("report_builder");
+            $L = $module->getLangStrings();
 
             echo <<< END
-    <link type="text/css" rel="stylesheet" href="$g_root_url/modules/report_builder/global/css/reports.css">
-    <script src="$g_root_url/modules/report_builder/global/scripts/reports.js"></script>
+    <link type="text/css" rel="stylesheet" href="$root_url/modules/report_builder/css/reports.css">
+    <script src="$root_url/modules/report_builder/scripts/reports.js"></script>
     <script>
-    g.reports_dialog = $("<div id=\"rb_reports_dialog\"><div style=\"text-align: center; padding: 30px\"><img src=\"{$g_root_url}/global/images/loading.gif\" /></div></div>");
+    g.reports_dialog = $("<div id=\"rb_reports_dialog\"><div style=\"text-align: center; padding: 30px\"><img src=\"{$root_url}/global/images/loading.gif\" /></div></div>");
     g.preload_loading_icon = new Image(32, 32);
-    g.preload_loading_icon.src = "{$g_root_url}/global/images/loading.gif";
+    g.preload_loading_icon.src = "{$root_url}/global/images/loading.gif";
     
     g.show_reports_dialog = function() {
       ft.create_dialog({
@@ -118,7 +122,7 @@ END;
         min_height: 400,
         open: function() {
           $.ajax({
-            url:  g.root_url + "/modules/report_builder/global/code/actions.php",
+            url:  g.root_url + "/modules/report_builder/code/actions.php",
             data: {
               action:  "get_reports",
               form_id: ms.form_id,
@@ -144,17 +148,13 @@ END;
     }
 
 
-    public function addQuicklink($params)
+    public function addQuicklink()
     {
         $root_url = Core::getRootUrl();
-        $smarty = Core::$smarty;
+        $module = Modules::getModuleInstance("report_builder");
+        $L = $module->getLangStrings();
 
-        // $g_smarty;
-
-        print_r($smarty->getTemplateVars());
-        return "";
-
-        $form_id = $smarty->_tpl_vars["SESSION"]["curr_form_id"];
+        $form_id = Sessions::get("curr_form_id");
 
         $settings = array("show_reports_icon_on_submission_listing_page", "icon_behaviour");
         $results = Settings::get($settings, "report_builder");
@@ -164,8 +164,6 @@ END;
         }
 
         $icon_behaviour = $results["icon_behaviour"];
-
-        $L = ft_get_module_lang_file_contents("report_builder");
 
         $quicklinks = array(
             "icon_url" => "{$root_url}/modules/report_builder/images/icon_report_builder16x16.png",
@@ -183,6 +181,16 @@ END;
     }
 
 
+    public function addReportBuilderMenuItems($params)
+    {
+        $module = Modules::getModuleInstance("report_builder");
+        return General::addReportBuilderMenuItems($params, $module->getLangStrings());
+    }
+
+    public function getReports($form_id)
+    {
+        return General::getReports($form_id);
+    }
 }
 
 

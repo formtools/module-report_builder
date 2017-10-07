@@ -2,6 +2,8 @@
 
 require_once("../../../global/library.php");
 
+use FormTools\Core;
+use FormTools\General;
 use FormTools\Modules;
 
 $module = Modules::initModulePage("client");
@@ -18,7 +20,7 @@ $return_val_str = "";
 if (isset($request["return_vals"])) {
     $vals = array();
     foreach ($request["return_vals"] as $pair) {
-        list($key, $value) = split(":", $pair);
+        list($key, $value) = mb_split(":", $pair);
         $vals[] = "$key: \"$value\"";
     }
     $return_val_str = ", " . join(", ", $vals);
@@ -34,14 +36,14 @@ switch ($action) {
             exit;
         }
 
-        if (!ft_is_admin()) {
-            $account_id = isset($_SESSION["ft"]["account"]["account_id"]) ? $_SESSION["ft"]["account"]["account_id"] : "";
-            if (!ft_check_client_may_view($account_id, $form_id, $view_id)) {
+        if (!Core::$user->isAdmin()) {
+            $account_id = Core::$user->getAccountId();
+            if (!General::checkClientMayView($account_id, $form_id, $view_id)) {
                 exit;
             }
         }
 
-        $report_info = rb_get_reports($form_id);
+        $report_info = $module->getReports($form_id);
         echo $report_info["content"];
         break;
 }

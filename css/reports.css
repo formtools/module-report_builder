@@ -32,7 +32,7 @@
 }
 .rb_view_row {
     border-bottom: 1px solid #efefef;
-    padding: 3px 3px 3px 15px;
+    padding: 8px 3px 1px 15px;
 }
 .rb_view_row:hover {
     background-color: #ddf9df;

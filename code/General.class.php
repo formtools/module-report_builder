@@ -6,6 +6,10 @@ namespace FormTools\Modules\ReportBuilder;
 use FormTools\Core;
 use FormTools\Forms;
 use FormTools\Modules;
+use FormTools\Sessions;
+use FormTools\Views;
+
+use Smarty;
 
 
 class General
@@ -41,13 +45,13 @@ class General
      * @param mixed $form_id a valid form ID, or empty string for all
      * @return array
      */
-    public function getReports($form_id)
+    public static function getReports($form_id)
     {
         $LANG = Core::$L;
-        $smarty = Core::$smarty;
         $root_dir = Core::getRootDir();
         $root_url = Core::getRootUrl();
-        $sub_dirs = Core::shouldUseSmartySubDirs();
+
+        $smarty = new Smarty();
 
         $return_info = array(
             "heading" => "",
@@ -56,9 +60,8 @@ class General
         );
 
         // first off, find out if we want to display a single form or all of them
-        $smarty->template_dir = "$root_dir/themes/default";
-        $smarty->compile_dir = "$root_dir/themes/default/cache/";
-        $smarty->use_sub_dirs = $sub_dirs;
+        $smarty->setTemplateDir("$root_dir/themes/default");
+        $smarty->setCompileDir("$root_dir/themes/default/cache/");
         $smarty->assign("LANG", $LANG);
         $smarty->assign("g_root_url", $root_url);
         $smarty->assign("is_single_form", false);
@@ -67,21 +70,24 @@ class General
         $is_valid_single_form = null;
         if (!empty($form_id)) {
             $is_single_form = true;
-            $is_valid_single_form = Forms::checkFormExists($form_id, false));
+            $is_valid_single_form = Forms::checkFormExists($form_id, false);
         }
         $smarty->assign("is_single_form", $is_single_form);
         $smarty->assign("is_valid_single_form", $is_valid_single_form);
 
-        $export_manager_available = Modules::checkModuleUsable("export_manager"));
+        $export_manager_available = Modules::checkModuleUsable("export_manager");
         $smarty->assign("export_manager_available", $export_manager_available);
 
-        $account_id = isset($_SESSION["ft"]["account"]["account_id"]) ? $_SESSION["ft"]["account"]["account_id"] : "";
+        $report_builder = Modules::getModuleInstance("report_builder");
+        $L = $report_builder->getLangStrings();
+
+        $smarty->assign("L", $L);
+        $account_id = Core::$user->getAccountId();
 
         // deeply klutzy function, that ft_search_forms...
         if (Core::$user->isAdmin()) {
             $account_id = "";
         }
-
         $forms = Forms::searchForms(array(
             "account_id" => $account_id,
             "is_admin" => true
@@ -109,46 +115,47 @@ class General
         if (empty($forms)) {
             return array(
                 "heading" => "", // give 'em no information :)
-                "error" => $LANG["report_builder"]["notify_form_no_permissions"],
+                "error" => $L["notify_form_no_permissions"],
                 "content" => ""
             );
         }
 
         // generate the heading
-        $return_info["heading"] = $smarty->fetch(realpath(dirname(__FILE__) . "/../../templates/heading.tpl"));
+        $return_info["heading"] = $smarty->fetch(realpath(__DIR__ . "/../templates/heading.tpl"));
 
         if (!$export_manager_available) {
-            $return_info["error"] = $LANG["report_builder"]["text_export_manager_not_available"];
+            $return_info["error"] = $L["text_export_manager_not_available"];
             return $return_info;
         }
 
         // include the Export Manager. We're going to need it
-        ft_include_module("export_manager");
+        $export_manager = Modules::getModuleInstance("export_manager");
 
         $form_views = array();
         foreach ($forms as $form_info) {
             $curr_form_id = $form_info["form_id"];
-            $views = ft_get_form_views($curr_form_id, $account_id);
+            $views = Views::getFormViews($curr_form_id, $account_id);
 
             $updated_views = array();
             foreach ($views as $view_info) {
                 $view_id = $view_info["view_id"];
-                if (!isset($_SESSION["ft"]["view_{$view_id}_num_submissions"])) {
-                    _ft_cache_view_stats($curr_form_id, $view_id);
+
+                if (!Sessions::exists("view_{$view_id}_num_submissions")) {
+                    Views::cacheViewStats($curr_form_id, $view_id);
                 }
 
-                if (!isset($_SESSION["ft"]["view_{$view_id}_num_submissions"]) || empty($_SESSION["ft"]["view_{$view_id}_num_submissions"]) || !is_numeric($_SESSION["ft"]["view_{$view_id}_num_submissions"])) {
-                    $_SESSION["ft"]["view_{$view_id}_num_submissions"] = 0;
+                if (!Sessions::isNonEmpty("view_{$view_id}_num_submissions") || !is_numeric(Sessions::get("view_{$view_id}_num_submissions"))) {
+                    Sessions::set("view_{$view_id}_num_submissions", 0);
                 }
 
-                $view_info["num_submissions_in_view"] = number_format($_SESSION["ft"]["view_{$view_id}_num_submissions"]);
+                $view_info["num_submissions_in_view"] = number_format(Sessions::get("view_{$view_id}_num_submissions"));
                 $updated_views[] = $view_info;
             }
 
             $form_views["form_{$curr_form_id}"] = $updated_views;
         }
 
-        $groups = exp_get_export_groups();
+        $groups = $export_manager->getExportGroups();
         $export_options = array();
         foreach ($groups as $group_info) {
             if ($group_info["visibility"] != "show") {
@@ -156,7 +163,7 @@ class General
             }
 
             $group_id = $group_info["export_group_id"];
-            $export_types = exp_get_export_types($group_id, true);
+            $export_types = $export_manager->getExportTypes($group_id, true);
 
             foreach ($export_types as $export_type_info) {
                 if ($export_type_info["visibility"] == "hide") {
@@ -174,14 +181,15 @@ class General
             }
         }
 
-        $module_settings = ft_get_module_settings("", "report_builder");
+        $module_settings = Modules::getModuleSettings("", "report_builder");
         $expand_by_default = isset($module_settings["expand_by_default"]) ? $module_settings["expand_by_default"] : "no";
 
         $smarty->assign("forms", $forms);
         $smarty->assign("form_views", $form_views);
         $smarty->assign("export_options", $export_options);
         $smarty->assign("expand_by_default", $expand_by_default);
-        $return_info["content"] = $smarty->fetch(realpath(dirname(__FILE__) . "/../../templates/report.tpl"));
+
+        $return_info["content"] = $smarty->fetch(realpath(__DIR__ . "/../templates/report.tpl"));
 
         return $return_info;
     }
