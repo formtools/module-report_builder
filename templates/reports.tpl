@@ -1,9 +1,9 @@
-{include file="header.tpl"}
+{ft_include file="header.tpl"}
 
   {$heading}
 
-  {include file="messages.tpl"}
+  {ft_include file="messages.tpl"}
 
   {$content}
 
-{include file="footer.tpl"}
+{ft_include file="footer.tpl"}
