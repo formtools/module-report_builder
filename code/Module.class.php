@@ -19,8 +19,8 @@ class Module extends FormToolsModule
     protected $author = "Ben Keen";
     protected $authorEmail = "ben.keen@gmail.com";
     protected $authorLink = "http://formtools.org";
-    protected $version = "2.0.1";
-    protected $date = "2017-11-07";
+    protected $version = "2.0.2";
+    protected $date = "2018-01-31";
     protected $originLanguage = "en_us";
 
     protected $nav = array(
@@ -30,11 +30,7 @@ class Module extends FormToolsModule
 
     public function install($module_id)
     {
-        Hooks::registerHook("code", "report_builder", "start", "FormTools\\Pages::constructPageUrl", "constructPageUrl", 50, true);
-        Hooks::registerHook("code", "report_builder", "middle", "FormTools\\Menus::getAdminMenuPagesDropdown", "addReportBuilderMenuItems", 50, true);
-        Hooks::registerHook("code", "report_builder", "middle", "FormTools\\Menus::getClientMenuPagesDropdown", "addReportBuilderMenuItems", 50, true);
-        Hooks::registerHook("template", "report_builder", "head_bottom", "", "includeInHead");
-        Hooks::registerHook("code", "report_builder", "main", "FormTools\\Submissions::displaySubmissionListingQuicklinks", "addQuicklink", 50, true);
+        $this->resetHooks();
 
         $settings = array(
             "show_reports_icon_on_submission_listing_page" => "yes",
@@ -62,6 +58,24 @@ class Module extends FormToolsModule
         Menus::cacheAccountMenu(Core::$user->getAccountId());
 
         return array(true, "");
+    }
+
+
+    public function upgrade($module_id, $old_module_version)
+    {
+        $this->resetHooks();
+    }
+
+
+    public function resetHooks()
+    {
+        $this->clearHooks();
+
+        Hooks::registerHook("code", "report_builder", "start", "FormTools\\Pages::constructPageUrl", "constructPageUrl", 50, true);
+        Hooks::registerHook("code", "report_builder", "middle", "FormTools\\Menus::getAdminMenuPagesDropdown", "addReportBuilderMenuItems", 50, true);
+        Hooks::registerHook("code", "report_builder", "middle", "FormTools\\Menus::getClientMenuPagesDropdown", "addReportBuilderMenuItems", 50, true);
+        Hooks::registerHook("template", "report_builder", "head_bottom", "", "includeInHead");
+        Hooks::registerHook("code", "report_builder", "main", "FormTools\\Submissions::displaySubmissionListingQuicklinks", "addQuicklink", 50, true);
     }
 
 
