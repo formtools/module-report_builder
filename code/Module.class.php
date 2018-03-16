@@ -18,9 +18,9 @@ class Module extends FormToolsModule
     protected $moduleDesc = "This module provides an alternative way to view the data stored in your forms. It creates pages that list all available Views for the administrator and clients, with all available export options - just one click away.";
     protected $author = "Ben Keen";
     protected $authorEmail = "ben.keen@gmail.com";
-    protected $authorLink = "http://formtools.org";
-    protected $version = "2.0.2";
-    protected $date = "2018-01-31";
+    protected $authorLink = "https://formtools.org";
+    protected $version = "2.0.3";
+    protected $date = "2018-03-15";
     protected $originLanguage = "en_us";
 
     protected $nav = array(

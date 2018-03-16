@@ -20,7 +20,7 @@ $return_val_str = "";
 if (isset($request["return_vals"])) {
     $vals = array();
     foreach ($request["return_vals"] as $pair) {
-        list($key, $value) = mb_split(":", $pair);
+        list($key, $value) = explode(":", $pair);
         $vals[] = "$key: \"$value\"";
     }
     $return_val_str = ", " . join(", ", $vals);
